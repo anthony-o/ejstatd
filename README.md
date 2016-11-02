@@ -13,7 +13,7 @@ With `ejstatd` you can control those ports using those 3 parameters: (in additio
 
 # Usage
 After having compiled the project (`mvn package`), one can launch `ejstatd` using those 2 different ways (replace the ports specified here - `2222`, `2223` and `2224` - with your own):
- - `mvn -e exec:java -Dexec.args="-pr2222 -ph2223 -pv2224"` using Maven
+ - `mvn exec:java -Dexec.args="-pr2222 -ph2223 -pv2224"` using Maven
 
 or
  - `java -cp "target\ejstatd-1.0.0.jar;%JAVA_HOME%\lib\tools.jar" com.github.anthony_o.ejstatd.EJstatd -pr2222 -ph2223 -pv2224` on Windows, if `JAVA_HOME` is set as an environment variable 
@@ -21,6 +21,21 @@ or
 
 You can also specify the arguments with spaces before the ports, like this:
  - `mvn -e exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"`
+
+# Usage in Docker
+In this section we will consider using those 3 ports as example, don't forget to replace them with yours: `2222` for `pr`, `2223` for `ph` and `2224` for `pv`.
+
+Inside a Docker container, don't forget to specify `-Djava.rmi.server.hostname=$HOST_HOSTNAME` when launching `ejstatd`. This environment variable should be set to the host's hostname passing for example `-e HOST_HOSTNAME=$HOSTNAME` to `docker run` command.
+
+You should as well force the 3 ports (using `-pr2222 -ph2223 -pv2224` when launching `ejstatd`) and expose them to the Docker host specifying `-p 2222:2222 -p 2223:2223 -p 2224:2224` to `docker run` command.
+
+To sum up, here is the minimum Docker run command:
+ - `docker run -e HOST_HOSTNAME=$HOSTNAME -p 2222:2222 -p 2223:2223 -p 2224:2224 myimage`
+
+And inside the Docker image `myimage`, `ejstatd` should be launched from a script in background in this way:
+ - `mvn -Djava.rmi.server.hostname=$HOST_HOSTNAME exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224" &`
+
+Then you could access this `ejstatd` using JVisualVM running on your Desktop PC for example adding a "Remote Host" specifying your Docker hostname as "Host name" and adding a "Custom jstatd Connections" (in the "Advanced Settings") by setting "2222" to "Port".
 
 # Prerequisites
  1. Install a [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)

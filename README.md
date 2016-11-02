@@ -20,7 +20,7 @@ or
  - `java -cp "target/ejstatd-1.0.0.jar:$JAVA_HOME/lib/tools.jar" com.github.anthony_o.ejstatd.EJstatd -pr2222 -ph2223 -pv2224` on Unix (using Bash), if `JAVA_HOME` is set as an environment variable
 
 You can also specify the arguments with spaces before the ports, like this:
- - `mvn -e exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"`
+ - `mvn exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"`
 
 # Usage in Docker
 In this section we will consider using those 3 ports as example, don't forget to replace them with yours: `2222` for `pr`, `2223` for `ph` and `2224` for `pv`.

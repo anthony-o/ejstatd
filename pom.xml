@@ -46,6 +46,9 @@
                             <classpathPrefix>lib</classpathPrefix>
                             <mainClass>com.github.anthony_o.ejstatd.EJstatd</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Class-Path>${tools.path}</Class-Path>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

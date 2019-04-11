@@ -32,6 +32,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -47,7 +49,7 @@ import java.util.*;
  * provided through an RMI interface.
  *
  * @author Brian Doherty
- * @since 1.5
+ * @since 1.7+
  */
 public class EJstatd {
 
@@ -59,7 +61,7 @@ public class EJstatd {
         System.err.println("usage: ejstatd [-nr] [-pr port] [-ph port] [-pv port] [-n rminame]");
     }
 
-    static void bind(String name, RemoteHostImpl remoteHost)
+    static void bind(final String name, final RemoteHostImpl remoteHost)
                 throws RemoteException, MalformedURLException, Exception {
 
         try {
@@ -85,7 +87,7 @@ public class EJstatd {
         }
     }
 
-    public static void main(String[] args) throws IOException, URISyntaxException, ClassNotFoundException {
+    public static void main(final String[] args) throws IOException, URISyntaxException, ClassNotFoundException {
         String rminame = null;
         int argc = 0;
         int remoteHostPort = Integer.parseInt(System.getProperty("ejstatd.remoteHost.port", "0"));
@@ -199,8 +201,12 @@ public class EJstatd {
             for (Class<?> klass : classesToAllow) {
                 CodeSource codeSource = klass.getProtectionDomain().getCodeSource();
                 if (codeSource != null) {
+                    // System.err.println("allow " + codeSource.getLocation().toURI().toString());
                     codebasesToAllow.add(codeSource.getLocation().toURI().toString());
                 }
+            }
+            if (!codebasesToAllow.contains("jrt:/jdk.internal.jvmstat") && codebasesToAllow.contains("jrt:/jdk.jstatd")) {
+                codebasesToAllow.add("jrt:/jdk.internal.jvmstat");
             }
 
             FileOutputStream policyOutputStream = new FileOutputStream(policyFile);
@@ -215,6 +221,8 @@ public class EJstatd {
                 policyOutputStream.close();
             }
             System.setProperty("java.security.policy", policyFile.toString());
+            System.err.println("java.security.policy=" + policyFile.toString());
+            System.err.println(new String(Files.readAllBytes(Paths.get(policyFile.toString()))));
         }
 
         if (System.getSecurityManager() == null) {

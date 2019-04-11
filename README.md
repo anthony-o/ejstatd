@@ -22,6 +22,19 @@ or
 You can also specify the arguments with spaces before the ports, like this:
  - `mvn exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"`
 
+Build and test on Mac OSX
+```bash
+JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home" mvn -Dmaven.test.skip=true help:active-profiles clean package
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-10.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-9.0.4.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+```
+
 # Usage in Docker
 In this section we will consider using those 3 ports as example, don't forget to replace them with yours: `2222` for `pr`, `2223` for `ph` and `2224` for `pv`.
 
@@ -36,6 +49,19 @@ And inside the Docker image `myimage`, `ejstatd` should be launched from a scrip
  - `mvn -Djava.rmi.server.hostname=$HOST_HOSTNAME exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224" &`
 
 Then you could access this `ejstatd` using JVisualVM running on your Desktop PC for example adding a "Remote Host" specifying your Docker hostname as "Host name" and adding a "Custom jstatd Connections" (in the "Advanced Settings") by setting "2222" to "Port".
+
+# Usage with Openshift (Production case, assuming that you cannot restart POD)
+1. Download `ejstatd` & corresponding `tools.jar` (from java folder) to the machine. (You can use [Droppy Tool](https://github.com/stackp/Droopy)  or even wget if you have public facing storage ) for that.
+2. Run it: 
+```bash
+java -Djava.rmi.server.hostname=localhost -cp "ejstatd-1.0.0.jar:tools1.8.jar" com.github.anthony_o.ejstatd.EJstatd -pr2222 -ph2223 -pv2224 
+```
+3. On the VisualVm machine - login to openshift & enable port forwarding:
+```bash
+oc login <address> --token=<token>
+oc port-forward <POD ID> 2222 2223 2224
+```
+4. Open VisualVm & connect jstat to local machine port 2222
 
 # Prerequisites
  1. Install a [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)

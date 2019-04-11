@@ -55,66 +55,60 @@ import java.util.Set;
 public class RemoteHostImpl implements RemoteHost, HostListener {
 
     private MonitoredHost monitoredHost;
-    private Set<Integer> activeVms;
+    private final Set<Integer> activeVms;
 
     public RemoteHostImpl() throws MonitorException {
         try {
-            monitoredHost = MonitoredHost.getMonitoredHost("localhost");
+            this.monitoredHost = MonitoredHost.getMonitoredHost("localhost");
         } catch (URISyntaxException e) { }
 
-        activeVms = monitoredHost.activeVms();
-        monitoredHost.addHostListener(this);
+        this.activeVms = this.monitoredHost.activeVms();
+        this.monitoredHost.addHostListener(this);
     }
 
-    public RemoteVm attachVm(int lvmid, String mode)
-                    throws RemoteException, MonitorException {
-        RemoteVm stub = null;
-        StringBuffer sb = new StringBuffer();
+    public RemoteVm attachVm(final int lvmid, final String mode) throws RemoteException, MonitorException {
+        RemoteVm stub;
 
+        final StringBuilder sb = new StringBuilder();
         sb.append("local://").append(lvmid).append("@localhost");
         if (mode != null) {
-            sb.append("?mode=" + mode);
+            sb.append("?mode=").append(mode);
         }
-
-        String vmidStr = sb.toString();
+        final String vmidStr = sb.toString();
 
         try {
-            VmIdentifier vmid = new VmIdentifier(vmidStr);
-            MonitoredVm mvm = monitoredHost.getMonitoredVm(vmid);
-            RemoteVmImpl rvm = new RemoteVmImpl((BufferedMonitoredVm)mvm);
+            final VmIdentifier vmid = new VmIdentifier(vmidStr);
+            final MonitoredVm mvm = this.monitoredHost.getMonitoredVm(vmid);
+            final RemoteVmImpl rvm = new RemoteVmImpl((BufferedMonitoredVm)mvm);
             stub = (RemoteVm) UnicastRemoteObject.exportObject(rvm, Integer.parseInt(System.getProperty("ejstatd.remoteVm.port", "0")));
         }
-        catch (URISyntaxException e) {
-            throw new RuntimeException("Malformed VmIdentifier URI: "
-                                       + vmidStr, e);
+        catch (final URISyntaxException e) {
+            throw new RuntimeException("Malformed VmIdentifier URI: " + vmidStr, e);
         }
         return stub;
     }
 
-    public void detachVm(RemoteVm rvm) throws RemoteException {
+    public void detachVm(final RemoteVm rvm) throws RemoteException {
         rvm.detach();
     }
 
     public int[] activeVms() throws MonitorException {
-        Object[] vms = null;
-        int[] vmids = null;
-
-        vms = monitoredHost.activeVms().toArray();
-        vmids = new int[vms.length];
+        Object[] vms = this.monitoredHost.activeVms().toArray();
+        int[] vmids = new int[vms.length];
 
         for (int i = 0; i < vmids.length; i++) {
-            vmids[i] = ((Integer)vms[i]).intValue();
+            vmids[i] = (Integer) vms[i];
         }
         return vmids;
     }
 
-    public void vmStatusChanged(VmStatusChangeEvent ev) {
+    public void vmStatusChanged(final VmStatusChangeEvent ev) {
         synchronized(this.activeVms) {
-            activeVms.retainAll(ev.getActive());
+            this.activeVms.retainAll(ev.getActive());
         }
     }
 
-    public void disconnected(HostEvent ev) {
+    public void disconnected(final HostEvent ev) {
         // we only monitor the local host, so this event shouldn't occur.
     }
 }

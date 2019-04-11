@@ -41,25 +41,25 @@ import sun.jvmstat.monitor.remote.RemoteVm;
  */
 public class RemoteVmImpl implements RemoteVm {
 
-    private BufferedMonitoredVm mvm;
+    private final BufferedMonitoredVm mvm;
 
-    RemoteVmImpl(BufferedMonitoredVm mvm) {
+    RemoteVmImpl(final BufferedMonitoredVm mvm) {
         this.mvm = mvm;
     }
 
     public byte[] getBytes() {
-        return mvm.getBytes();
+        return this.mvm.getBytes();
     }
 
     public int getCapacity() {
-        return mvm.getCapacity();
+        return this.mvm.getCapacity();
     }
 
     public void detach() {
-        mvm.detach();
+        this.mvm.detach();
     }
 
     public int getLocalVmId() {
-        return mvm.getVmIdentifier().getLocalVmId();
+        return this.mvm.getVmIdentifier().getLocalVmId();
     }
 }

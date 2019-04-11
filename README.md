@@ -22,6 +22,19 @@ or
 You can also specify the arguments with spaces before the ports, like this:
  - `mvn exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"`
 
+Build and test on Mac OSX
+```bash
+JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home" mvn -Dmaven.test.skip=true help:active-profiles clean package
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-10.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-9.0.4.jdk/Contents/Home" MAVEN_OPTS="--add-modules jdk.jstatd,jdk.internal.jvmstat" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+
+JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home" mvn -Dmaven.test.skip=true help:active-profiles clean package exec:java -Dexec.args="-pr 2222 -ph 2223 -pv 2224"
+```
+
 # Usage in Docker
 In this section we will consider using those 3 ports as example, don't forget to replace them with yours: `2222` for `pr`, `2223` for `ph` and `2224` for `pv`.
 

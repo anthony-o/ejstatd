@@ -1,73 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.anthony-o</groupId>
     <artifactId>ejstatd</artifactId>
-    <version>1.0.0</version>
-    <packaging>jar</packaging>
     <description>Enhanced jstatd</description>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.5</java.version>
-    </properties>
-
-    <!-- add JDK tools.jar as maven dependency thanks to http://stackoverflow.com/q/3080437/535203 -->
-    <profiles>
-        <profile>
-            <id>default-profile</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.6</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>mac-profile</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../Classes/classes.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.6</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../Classes/classes.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>newer-jdk</id>
-            <activation>
-                <jdk>(1.8,)</jdk>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.6</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+    <groupId>com.github.anthony-o</groupId>
+    <packaging>jar</packaging>
+    <version>1.0.0</version>
 
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -76,7 +19,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -85,21 +27,31 @@
                             <classpathPrefix>lib</classpathPrefix>
                             <mainClass>com.github.anthony_o.ejstatd.EJstatd</mainClass>
                         </manifest>
-                        <manifestEntries>
-                            <Class-Path>${tools.path}</Class-Path>
-                        </manifestEntries>
+                        <!--manifestEntries><Class-Path>${tools.path}</Class-Path></manifestEntries-->
                     </archive>
+                    <classifier>java${java.version}</classifier>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
+                        <id>add-source-of-specific-java-version</id>
+                        <phase>generate-sources</phase>
+                        <goals><goal>add-source</goal></goals>
+                        <configuration>
+                            <sources><source>src/main/java${java.version}</source></sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals><goal>java</goal></goals>
                     </execution>
                 </executions>
                 <configuration>
@@ -109,5 +61,100 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin><artifactId>build-helper-maven-plugin</artifactId><groupId>org.codehaus.mojo</groupId><version>3.0.0</version></plugin>
+                <plugin><artifactId>exec-maven-plugin</artifactId><groupId>org.codehaus.mojo</groupId><version>1.6.0</version></plugin>
+                <plugin><artifactId>maven-compiler-plugin</artifactId><version>3.8.0</version></plugin>
+                <plugin><artifactId>maven-jar-plugin</artifactId><version>3.1.1</version></plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
+    <!-- add JDK tools.jar as maven dependency thanks to http://stackoverflow.com/q/3080437/535203 -->
+    <profiles>
+        <profile>
+            <id>ejstatd-default-java8</id>
+            <activation>
+                <jdk>[1.8,9)</jdk>
+                <file><exists>${java.home}/../lib/tools.jar</exists></file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.8</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+            <properties>
+                <java.version>8</java.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>ejstatd-java9-to-10</id>
+            <activation>
+                <jdk>[9,10]</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xdiags:verbose</arg>
+                                <arg>-Xlint:deprecation</arg>
+                                <!---->
+                                <arg>--add-modules=jdk.jstatd,jdk.internal.jvmstat</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.jstatd/sun.jvmstat.monitor.remote=ALL-UNNAMED</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.internal.jvmstat/sun.jvmstat.monitor.event=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <java.version>9</java.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>ejstatd-java11-and-newer</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xdiags:verbose</arg>
+                                <arg>-Xlint:deprecation</arg>
+                                <!---->
+                                <arg>--add-modules=jdk.jstatd,jdk.internal.jvmstat</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.jstatd/sun.jvmstat.monitor.remote=ALL-UNNAMED</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</arg>
+                                <!---->
+                                <arg>--add-exports</arg><arg>jdk.internal.jvmstat/sun.jvmstat.monitor.event=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <java.version>11</java.version>
+            </properties>
+        </profile>
+    </profiles>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 </project>
